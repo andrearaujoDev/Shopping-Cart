@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Carrinho de Compras</title>
+    </h:head>
+    <h:body>
+        <h:form id="productsform">
+            <div style="padding: 10px;" > 
+                <p:commandButton value="Voltar as compras"  action="#{carrinhoMB.voltarCompra()}"/>
+            </div>
+            <p:dataScroller id="dsproduct" value="#{carrinhoMB.carrinho.produtos}" var="product" chunkSize="10" > 
+                    <f:facet name="header">
+                        Carrinho de Compras
+                    </f:facet>
+
+                    <h:panelGrid columns="5" style="width:30%;" columnClasses="logo,detail"  >
+                        <p:graphicImage url="./resources/img/product.png" width="50" height="50"/> 
+
+                        <p:outputPanel >
+                            <h:panelGrid columns="2" cellpadding="5" >
+                                
+                                <h:outputText value="Nome: " />
+                                <h:outputText value="#{product.nome}" style="font-weight: bold"/>
+
+                                <h:outputText value="Preço: " />
+                                <h:outputText value="#{product.preco}" style="font-weight: bold"/>
+                                
+                                <h:outputText value="Categoria:  " />
+                                <h:outputText value="#{product.categoria}" style="font-weight: bold"/>
+
+                                <h:outputText value="Descrição: " />
+                                <h:outputText value="#{product.descricao}" style="font-weight: bold"/>
+                                
+                                <p:commandLink action="#{carrinhoMB.remover(product)}" update="productsform,dialogCarrinho" 
+                                               onclick="if(!confirm('Tem certeza que deseja remover do carrinho ?')) return false">
+                                    
+                                <p:graphicImage url="/resources/img/remove.png" title="Remover Produto do Carrinho"
+                                                height="40" width="40" />
+                                
+                                </p:commandLink>
+                                
+                            </h:panelGrid>
+                         </p:outputPanel>
+                    </h:panelGrid>
+                </p:dataScroller>
+        
+               </h:form>
+               
+        
+               <h:form id="dialogCarrinho">   
+                    <p:dialog id="dialog" 
+                             header="Sumário do Pedido" 
+                             widgetVar="carrinhoDialog"
+                             resizable="false" 
+                             dynamic="true"
+                             width="600" 
+                             showEffect="clip" 
+                             hideEffect="fold" 
+                             position="center" 
+                             modal="true"
+                             >
+
+                             <p:panel id="panel"> 
+                                 
+                                 <p:dataTable id="tabelaCarrinho" value="#{carrinhoMB.carrinho.produtos}" var="produto" 
+                                                rows="5" emptyMessage="Nenhum Registro Encontrado" style="padding-bottom: 10px;">
+                                        <p:column>
+                                            <f:facet name="header">Nome</f:facet>
+                                            <h:outputText value="#{produto.nome}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header">Quantidade</f:facet>
+                                            <h:outputText value="#{produto.quantidade}"/>
+                                            <div style="float: right;">
+                                                <p:commandLink action="#{carrinhoMB.SubtrairQuantidade(produto)}" update="tabelaCarrinho" >
+                                                    <p:graphicImage url="/resources/img/subtract.png" title="Remover"
+                                                                    height="18" width="18"/>
+                                                </p:commandLink>
+                                                <p:commandLink action="#{carrinhoMB.SomarQuantidade(produto)}" update="tabelaCarrinho">
+                                                    <p:graphicImage url="/resources/img/plus.png" title="Adicionar"
+                                                                    height="20" width="20" />
+                                                </p:commandLink>
+                                            </div>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="header">Preço</f:facet>
+                                            <h:outputText value="#{produto.preco}"/>
+                                        </p:column>
+                                     
+                                     <f:facet name="footer">Subtotal: --------------------------------------------------- R$ #{carrinhoMB.calculaTotal()}</f:facet>
+                                </p:dataTable>
+                                 <div align="center">
+                                     <h4>Selecione uma forma de pagamento</h4>
+                                    <p:outputPanel id="customPanel" style="margin-bottom:10px" >
+
+                                        <p:selectOneRadio id="customRadio" value="#{carrinhoMB.formadepagamento}" layout="custom">
+                                           <f:selectItem  itemValue="Visa" />
+                                           <f:selectItem  itemValue="Mastercard" />
+                                           <f:selectItem  itemValue="American Express" />
+                                           <f:selectItem  itemValue="Boleto" />
+                                       </p:selectOneRadio>
+
+                                       <h:panelGrid columns="8" cellpadding="2">
+                                           <p:radioButton id="opt1" for="customRadio" itemIndex="0" />
+                                           <p:graphicImage url="/resources/img/visa.png" style="width:60px; height: 40px;"/>
+
+                                           <p:radioButton id="opt2" for="customRadio" itemIndex="1" />
+                                           <p:graphicImage url="/resources/img/mastercard.png" style="width:60px; height: 40px;"/>
+
+                                           <p:radioButton id="opt3" for="customRadio" itemIndex="2" />
+                                           <p:graphicImage url="/resources/img/american.png" style="width:60px; height: 30px;"/>
+
+                                           <p:radioButton id="opt4" for="customRadio" itemIndex="3" />
+                                           <p:graphicImage url="/resources/img/boleto.png" style="width:60px; height: 30px;"/>
+                                       </h:panelGrid>
+
+                                     </p:outputPanel>
+                                 </div> 
+                            </p:panel>    
+                                <div align="center" style="padding: 10px;"  > 
+                                    <p:commandButton value="Finalizar Compra" 
+                                                     action="#{carrinhoMB.formadePagamento()}" />
+                                </div> 
+                </p:dialog>
+            </h:form>
+            
+            <h:form id="dialogFinalizaCartao">
+                
+                    <p:dialog id="dialog" 
+                             header="Finalizar Pedido" 
+                             widgetVar="finalizarPedidoCartao"
+                             resizable="false" 
+                             dynamic="true"
+                             width="600" 
+                             showEffect="clip" 
+                             hideEffect="fold" 
+                             position="center" 
+                             modal="true"
+                             >
+                            
+                            <p:panel id="panel"> 
+                               <p:messages id="messages" showDetail="true" closable="true">
+                                    <p:autoUpdate />
+                                </p:messages>
+                                
+                                <h:panelGrid columns="5" style="margin-bottom:10px" cellpadding="5">
+                                    <p:outputLabel for="console" value="Parcelamento:" />
+                                    <p:selectOneMenu id="console" value="#{carrinhoMB.parcelado}" style="width:125px">
+                                        <f:selectItem itemLabel="1x" itemValue="1x" />
+                                        <f:selectItem itemLabel="2x" itemValue="2x" />
+                                        <f:selectItem itemLabel="4x" itemValue="4x" />
+                                        <f:selectItem itemLabel="6x" itemValue="6x" />
+                                        <f:selectItem itemLabel="8x" itemValue="8x" />
+                                        <f:selectItem itemLabel="10x" itemValue="10x" />
+                                        <f:selectItem itemLabel="12x" itemValue="12x" />
+                                    </p:selectOneMenu>
+
+                                    <p:commandButton value="Finalizar" action="#{carrinhoMB.finalizado()}" update="messages"/>
+                                </h:panelGrid>
+                            </p:panel>    
+                                 
+                </p:dialog>
+            </h:form>
+       
+        <h:form id="dialogFinalizaBoleto">   
+                    <p:dialog id="dialog" 
+                             header="Finalizar Pedido" 
+                             widgetVar="finalizarPedidoBoleto"
+                             resizable="false" 
+                             dynamic="true"
+                             width="600" 
+                             showEffect="clip" 
+                             hideEffect="fold" 
+                             position="center" 
+                             modal="true"
+                             >
+
+                             <p:panel id="panel"> 
+                                 <p:messages id="messages" showDetail="true" closable="true">
+                                    <p:autoUpdate />
+                                </p:messages>
+                                 <h:panelGrid columns="2" cellpadding="5"  >
+                                     <p:inputText placeholder="Digite seu email aqui" value="#{carrinhoMB.emailDigitado}" style="padding-right: 20px;" required="true" 
+                                                  requiredMessage="#{carrinhoMB.campoObrigatorio()}" />
+                                     <p:commandButton value="Finalizar" action="#{carrinhoMB.finalizadoBoleto()}" update="messages"  />
+                                </h:panelGrid>
+                                 
+                            </p:panel>    
+                                 
+                </p:dialog>
+            </h:form>
+               
+        <footer style="width: 50%; padding-left: 860px; bottom: 0; padding-top: 10px;">
+            <p:commandButton value="Finalizar Pedidos"  onclick="PF('carrinhoDialog').show()" />
+        </footer>
+   
+    </h:body>
+</html>
+
